@@ -6,7 +6,7 @@
 using std::cout;
 using std::endl;
 
-__global__ multiply_me_GPU(int *a, int *b, int *c, int width) {
+__global__ void multiply_me_GPU(int *a, int *b, int *c, int width) {
 
     int row = blockIdx.y * gridDim.y + threadIdx.y;
     int column = blockIdx.x * gridDim.x + threadIdx.x;
@@ -21,14 +21,14 @@ __global__ multiply_me_GPU(int *a, int *b, int *c, int width) {
 
 }
 
-multiply_me_CPU(int *a, int *b, int *c, int width) {
+void multiply_me_CPU(int *a, int *b, int *c, int width) {
 
     int sum;
 
     for (int row = 0; row < width; row++) {
         for (int column = 0; column < width; column++) {
             sum = 0;
-            for (int k = 0; k < width; k++) {
+            for (int kk = 0; kk < width; kk++) {
                 sum += a[row * width + kk] * b[column + kk * width];
             }
             c[row * width + column] = sum;
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     int *h_c = new int[N * N];
     int *h_c2 = new int [N * N];
 
-    unsigend int seed = std::chrono::system_clock::now().time_since_epoch().count();
+    unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::mt19937 engine(seed);
     std::uniform_int_distribution<int> distribution(0, 50);
 
@@ -78,8 +78,8 @@ int main(int argc, char *argv[])
     cudaMemcpy(d_a, h_a, N * N * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_b, h_b, N * N * sizeof(int), cudaMemcpyHostToDevice);
     cudaEventRecord(copy_stop, 0);
-    cudaEventSynchronise(copy_stop);
-    cudaElapsedTime(&copy_elapsed, copy_start, copy_stop);
+    cudaEventSynchronize(copy_stop);
+    cudaEventElapsedTime(&copy_elapsed, copy_start, copy_stop);
 
     float GPU_elapsed;
     cudaEvent_t GPU_start;
@@ -90,8 +90,8 @@ int main(int argc, char *argv[])
     cudaEventRecord(GPU_start, 0);
     multiply_me_GPU<<<nblocks, nthreads>>>(d_a, d_b, d_c, N);
     cudaEventRecord(GPU_stop, 0);
-    cudaEventSynchronise(GPU_stop);
-    cudaElapsedTime(&GPU_elapsed, GPU_start, GPU_stop)
+    cudaEventSynchronize(GPU_stop);
+    cudaEventElapsedTime(&GPU_elapsed, GPU_start, GPU_stop);
 
     cudaMemcpy(h_c, d_c, N * N * sizeof(int), cudaMemcpyDeviceToHost);
 
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     CPU_start = std::chrono::system_clock::now();
     multiply_me_CPU(h_a, h_b, h_c2, N);
     CPU_stop = std::chrono::system_clock::now();
-    CPU_elapsed = CPU_start - CPU_stop;
+    CPU_elapsed = CPU_stop - CPU_start;
 
     cout << "It tool " << copy_elapsed / 1000.0f << "s to copy to data to the GPU" << endl;
     cout << "It took " << GPU_elapsed / 1000.0f << "s to multiply the matrix on the GPU" << endl;

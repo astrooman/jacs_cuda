@@ -7,9 +7,9 @@ using std::endl;
 int main(int argc, char *argv[])
 {
 
-    cufftComplex sig1 = new cufftComplex[8];
-    cufftComplex sig2 = new cufftComplex[8];
-    cufftComplex sig3 = new cufftComplex[8];
+    cufftComplex *sig1 = new cufftComplex[8];
+    cufftComplex *sig2 = new cufftComplex[8];
+    cufftComplex *sig3 = new cufftComplex[8];
 
     for (int ii = 0; ii < 8; ii ++) {
         sig1[ii].x = 1.0f * (ii % 2);
@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
         sig2[ii].x = 0.0f;
         sig2[ii].y = -1.0f * (ii % 2);
         sig3[ii].x = sig1[ii].x;
-        sig3[ii].y = sig2[ii].y
+        sig3[ii].y = sig2[ii].y;
 
     }
 
@@ -25,9 +25,9 @@ int main(int argc, char *argv[])
     cufftComplex *d_s2;
     cufftComplex *d_s3;
 
-    cudaMalloc((void**)&d_s1, 8 * sizeof(cufftCoplex));
-    cudaMalloc((void**)&d_s2, 8 * sizeof(cufftCoplex));
-    cudaMalloc((void**)&d_s3, 8 * sizeof(cufftCoplex));
+    cudaMalloc((void**)&d_s1, 8 * sizeof(cufftComplex));
+    cudaMalloc((void**)&d_s2, 8 * sizeof(cufftComplex));
+    cudaMalloc((void**)&d_s3, 8 * sizeof(cufftComplex));
 
     cudaMemcpy(d_s1, sig1, 8 * sizeof(cufftComplex), cudaMemcpyHostToDevice);
     cudaMemcpy(d_s2, sig2, 8 * sizeof(cufftComplex), cudaMemcpyHostToDevice);
@@ -39,13 +39,13 @@ int main(int argc, char *argv[])
     cufftExecC2C(fftplan, d_s2, d_s2, CUFFT_FORWARD);
     cufftExecC2C(fftplan, d_s3, d_s3, CUFFT_FORWARD);
 
-    cufftComplex fft1 = new cufftComplex[8];
-    cufftComplex fft3 = new cufftComplex[8];
-    cufftComplex fft3 = new cufftComplex[8];
+    cufftComplex *fft1 = new cufftComplex[8];
+    cufftComplex *fft2 = new cufftComplex[8];
+    cufftComplex *fft3 = new cufftComplex[8];
 
-    cudaMemcpy(fft1, d_s1, 8 * sizeof(cufftComplex), cudaMemcpyHostToDevice);
-    cudaMemcpy(fft2, d_s2, 8 * sizeof(cufftComplex), cudaMemcpyHostToDevice);
-    cudaMemcpy(fft3, d_s2, 8 * sizeof(cufftComplex), cudaMemcpyHostToDevice);
+    cudaMemcpy(fft1, d_s1, 8 * sizeof(cufftComplex), cudaMemcpyDeviceToHost);
+    cudaMemcpy(fft2, d_s2, 8 * sizeof(cufftComplex), cudaMemcpyDeviceToHost);
+    cudaMemcpy(fft3, d_s3, 8 * sizeof(cufftComplex), cudaMemcpyDeviceToHost);
 
     cout << "Signal 1: " << endl;
     for (int ii = 0; ii < 8; ii++) {
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
         cout << sig3[ii].x << " + i*" << sig3[ii].y << endl;
     }
 
-    cout << "Signal 1 FFT: " << endl;
+    cout << "Signal 3 FFT: " << endl;
     for (int ii = 0; ii < 8; ii++) {
         cout << fft3[ii].x << " + i*" << fft3[ii].y << endl;
     }

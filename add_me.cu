@@ -4,7 +4,7 @@
 using std::cout;
 using std::endl;
 
-__global__ add_me(int *a, int* b, int *c) {
+__global__ void add_me(int *a, int* b, int *c) {
 
     if(threadIdx.x < 8)
         c[threadIdx.x] = a[threadIdx.x] + b[threadIdx.x];
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 {
 
     int arr1[8] = {1, 2, 3, 4 , 5 ,6 ,7, 8};
-    int arr2[8] = {9, 10, 11, 12, 13, 14, 15 ,16};
+    int arr2[8] = {9, 10, 11, 12, 13, 14, 15, 16};
 
     cout << "First array: " << endl;
     for (int x: arr1) {
